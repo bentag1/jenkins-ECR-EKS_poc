@@ -5,7 +5,6 @@ pipeline {
     }
     environment {
         registry = '730137084652.dkr.ecr.us-east-1.amazonaws.com/geolocation_ecr_rep'
-        registryCredential = 'jenkins-ecr'
         dockerimage = '' 
     }
     stages {
@@ -36,8 +35,16 @@ pipeline {
         stage('Pushing to ECR') {
             steps{
                 script {
-                    sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 730137084652.dkr.ecr.us-east-1.amazonaws.com/geolocation_ecr_rep'
+                    sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 730137084652.dkr.ecr.us-east-1.amazonaws.com'
                     sh 'docker push 730137084652.dkr.ecr.us-east-1.amazonaws.com/geolocation_ecr_rep:latest'
+                }
+            }
+        }
+        //deploy the image that is in ECR to our EKS cluster
+        stage ("Kube Deploy") {
+            steps {
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'eks_credential', namespace: '', serverUrl: '') {
+                 sh "kubectl apply -f eks-deploy-from-ecr.yaml"
                 }
             }
         }
