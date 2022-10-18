@@ -41,6 +41,7 @@ pipeline {
                 }
             }
         }
+    }
         //deploy the image that is in ECR to our EKS cluster
         stage ("Kube Deploy") {
             steps {
